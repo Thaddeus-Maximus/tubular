@@ -3,6 +3,8 @@ step_reader = STEPControl_Reader()
 step_reader.ReadFile('./tubes.step')
 step_reader.TransferRoot()
 shape = step_reader.Shape()
+import faulthandler
+faulthandler.enable()
 
 """
 from OCC.Display.SimpleGui import init_display
@@ -30,8 +32,9 @@ occ_seq = TopTools_ListOfShape()
 
 while topExp.More():
 	c = topExp.Current()
-	print(c, dir(c), dir(c.Location()))
+	print(c, dir(c), c.Location(), dir(c.Location()))
 	topExp.Next()
+	print()
 
 #print(topExp.More())
 #print(topExp.Current())
