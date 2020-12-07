@@ -18,3 +18,7 @@ Python 3.7 with these packages:
 
 Conda may make installing these dependencies easier.
 PyNite is not available from pip. The package pynite (lowercase) is for Fortnite... which isn't helpful.
+
+# Struggles
+Why doesn't pythonocc actually let you do anything useful? I just want to query things :(
+I might just parse IGES files myself. https://wiki.eclipse.org/IGES_file_Specification
