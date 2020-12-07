@@ -18,7 +18,7 @@ import matplotlib.pyplot as plt
 REALFIRST = -20000000000000000318057822195198360936721617127890562779562655115495677544340762121626939971713630208
 # I don't like this either, mate.
 
-shape = read_iges_file('tubes.iges')
+shape = read_iges_file('tubes_splined.iges')
 
 #print(dir(shape.Location()))
 #print(shape.Location().Identity())
