@@ -14,11 +14,12 @@ Python 3.7 with these packages:
 - matplotlib
 - PrettyTable
 - VTK (this one is annoying, but you'll want it for visualization)
-[https://github.com/tpaviot/pythonocc-core](PythonOCC-Core) 7.4.1
+[https://github.com/Thaddeus-Maximus/IGES-File-Reader](IGES-File-Reader), which depends on
+- numpy
+- matplotlib (sortof)
 
-Conda may make installing these dependencies easier.
+Conda may make installing some of these dependencies easier.
 PyNite is not available from pip. The package pynite (lowercase) is for Fortnite... which isn't helpful.
 
-# Struggles
-Why doesn't pythonocc actually let you do anything useful? I just want to query things :(
-I might just parse IGES files myself. https://wiki.eclipse.org/IGES_file_Specification
+# Struggles and Thoughts
+pythonocc is not the right route for CAD import, so it seems. There's many KLOC yet noone seems to know how to actually extract information from entities...

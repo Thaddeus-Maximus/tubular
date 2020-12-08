@@ -9,18 +9,12 @@
 from PyNite import FEModel3D
 from PyNite import Visualization
 
+from iges.read import IGES_Object
+from iges.curves_surfaces import CircArc, Line, CompCurve, AssociativityInstance
+
 # Create a new model
 frame = FEModel3D()
 
-# Define the nodes
-frame.AddNode('N1', 0, 0, 0)
-frame.AddNode('N2', 10*12, 0, 0)
-frame.AddNode('N3', 10*12, 0, -10*12)
-frame.AddNode('N4', 10*12, -20*12, -10*12)
-
-# Define the supports
-frame.DefineSupport('N1', True, True, True, True, True, True)
-frame.DefineSupport('N4', True, True, True, True, True, True)
 
 # Create members (all members will have the same properties in this example)
 J = 100
@@ -30,14 +24,22 @@ E = 30000
 G = 10000
 A = 100
 
-frame.AddMember('M12', 'N1', 'N2', E, G, Iy, Iz, J, A)
-frame.AddMember('M23', 'N2', 'N3', E, G, Iy, Iz, J, A)
-frame.AddMember('M34', 'N3', 'N4', E, G, Iy, Iz, J, A)
+for i, entity in enumerate(igs.toplevel_entities):
+    if type(entity) in [CircArc, Line, CompCurve, AssociativityInstance]:
+        lsp = entity.linspace(10, endpoint=True)
+        #plt.plot(lsp[0,:], lsp[1,:], lsp[2,:], '-*')
+        for j in range(lsp.shape[1]):
+        	frame.AddNode('N_%d_%d'%(i, j), lsp[0, j], lsp[1, j], lsp[2, j])
+        for j in range(lsp.shape[1]-1):
+        	frame.AddMember('M_%d_%d'%(i,j), 'N_%d_%d'%(i,j), 'M_%d_%d'%(i,j+1), E, G, Iy, Iz, J, A)
+        break
+
+
+# Define the supports
+frame.DefineSupport('N_0_0', True, True, True, True, True, True)
 
 # Add nodal loads
-frame.AddNodeLoad('N2', 'FY', -5)
-frame.AddNodeLoad('N2', 'MX', -100*12)
-frame.AddNodeLoad('N3', 'FZ', 40)
+frame.AddNodeLoad('N_0_5', 'FY', -5)
 
 # Analyze the frame
 frame.Analyze()
