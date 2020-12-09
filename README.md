@@ -6,6 +6,12 @@ Tubeframe FE analyisis that doesn't suck. By "doesn't suck", what I mean is:
 - Delightful; gives you additional tools that you wouldn't easily have in other FE softwares
 - Open; you've got full access to the innards if you really want to go there.
 
+# How's it Going?
+
+Well, I have loaded an IGES file, and I've meshed it, loaded it, and computed some results (are they right? idfk)
+![](08DEC2020_capture.png)
+It's really manual and sucks, though. So that's not good.
+
 # Dependencies
 Python 3.7 with these packages:
 [https://github.com/JWock82/PyNite](PyNite), which depends on
