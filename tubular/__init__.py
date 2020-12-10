@@ -7,6 +7,7 @@ from iges.read import IGES_Object
 from iges.curves_surfaces import CircArc, Line, CompCurve, AssociativityInstance
 
 from PyNite import FEModel3D, Visualization
+from copy import deepcopy
 
 EPSILON = 1e-5
 
@@ -41,11 +42,11 @@ class Tubular(object):
 
 	def buildModel(self):
 		J = 100
-		Iy = 200
-		Iz = 1000
-		E = 30000
-		G = 10000
-		A = 100
+		Iy = 20
+		Iz = 10
+		E = 300
+		G = 100
+		A = 1
 
 		nodenames = []
 		for member in self.members:
@@ -53,18 +54,18 @@ class Tubular(object):
 				if not member.nodes[i] in nodenames:
 					print(member.nodes[i].name)
 					nodenames.append(member.nodes[i].name)
-					self.model.AddNode(member.nodes[i].name,
+					self.model.AddNode('N_'+member.nodes[i].name,
 						member.nodes[i].xyz[0],
 						member.nodes[i].xyz[1],
 						member.nodes[i].xyz[2])
 		for member in self.members:
 			print(member.name, member.nodes[0].name, member.nodes[1].name)
-			self.model.AddMember(member.name, member.nodes[0].name, member.nodes[1].name, E, G, Iy, Iz, J, A)
+			self.model.AddMember('M_'+member.name, 'N_'+member.nodes[0].name, 'N_'+member.nodes[1].name, E, G, Iy, Iz, J, A)
 
 
 	def showGeometry(self):
 		
-		Visualization.RenderModel(self.model, text_height=0.001, deformed_shape=True, deformed_scale=400, render_loads=True)
+		Visualization.RenderModel(self.model, text_height=0.003, deformed_shape=True, deformed_scale=40000000, render_loads=True)
 
 	def showResults(self):
 		pass
@@ -99,24 +100,36 @@ class Tubular(object):
 		return rval
 
 	def autojoin(self, joint_type='bonded'):
-		comb = permutations(range(len(self.members)), 2)
+		#comb = permutations(range(len(self.members)), 2)
 		dists = {}
-		for c in list(comb):
-			for i in [0,1]:
-				a = c[0]
-				b = c[1]
-				ma = self.members[a]
-				mb = self.members[b]
+		
 
-				#dists[a][(b, 0)] = ma.entity.nearestPoint(mb.nodes[0].xyz)
-				#dists[a][(b, 1)] = ma.entity.nearestPoint(mb.nodes[1].xyz)
-				dist, pt, node = ma.entity.nearestPoint(mb.nodes[i].xyz)
-				if dist < EPSILON:
-					#print("Would like to join ", ma, " to ", mb, " at ", pt, node)
-					if node:
-						print('Joining ', mb.name, i, ' / ', mb.nodes[i].name, '->', ma.nodes[node-1].name)
-						mb.nodes[i] = ma.nodes[node-1]
-						#ma.nodes[node-1].members.append(mb) # bookkeeping more than anything?
+		# Why not just use permutations? because self.members is a growing list.
+		a = 0
+		while a < len(self.members):
+			b = 0
+			while b < len(self.members):
+				if a == b:
+					b+=1
+					continue
+				for i in [0,1]:
+					ma = self.members[a]
+					mb = self.members[b]
+
+					dist, pt, node = ma.entity.nearestPoint(mb.nodes[i].xyz)
+					#print(dist, pt, node)
+					if dist < EPSILON:
+						#print("Would like to join ", ma, " to ", mb, " at ", pt, node)
+						if node:
+							print('Joining ', mb.name, i, ' / ', mb.nodes[i].name, '->', ma.nodes[node-1].name)
+							mb.nodes[i] = ma.nodes[node-1]
+						else:
+							print('Splicing ', ma.name, ' / ', mb.nodes[i].name)
+							ma, mc = ma.splitAtNode(mb.nodes[i])
+							self.members[a] = ma
+							self.members.append(mc)
+				b+=1
+			a+=1
 
 	def solve(self):
 		self.model.Analyze()
@@ -126,7 +139,7 @@ class Tubular(object):
 
 class TubularNode(object):
 	def __init__(self, name, model, xyz):
-		self.name = 'N_'+name
+		self.name = name
 		
 		self.model   = model
 		#self.members = members
@@ -135,7 +148,7 @@ class TubularNode(object):
 class TubularMember(object):
 
 	def __init__(self, name, model, nodes, entity):
-		self.name = 'M_'+name
+		self.name = name
 
 		self.model  = model
 		self.nodes  = nodes
@@ -147,6 +160,26 @@ class TubularMember(object):
 
 	def __repr__(self):
 		return "TubularMember("+self.name+", "+str(type(self.entity))+")"
+
+	def splitAtNode(self, midnode):
+		""" returns a list of two *NEW* TubularMembers that have been split at the given node. Assumes given node makes sense to be "on" the member. """
+		if type(self.entity) is Line:
+			e1 = deepcopy(self.entity)
+			e2 = deepcopy(self.entity)
+			e1.p2 = midnode.xyz
+			e2.p1 = midnode.xyz
+			return [TubularMember(self.name+"_1", self.model, [self.nodes[0], midnode], e1), TubularMember(self.name+"_2", self.model, [midnode, self.nodes[1]], e2)]
+		if type(self.entity) is CircArc:
+			print("pls not yet. >.<")
+
+	def linspace(self, n_points):
+		""" returns a list of n_points *NEW* TubularMembers that have been split equally. Endpoints remain the same as before, but new nodes are added in the middle. """
+		pass
+
+	def arange(self, dx):
+		""" returns a list of *NEW* TubularMembers that have been split equally, roughly dx-big. Endpoints remain the same as before, ut new nodes are added in the middle. """
+		pass
+
 
 # Materials / Sections
 
