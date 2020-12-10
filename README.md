@@ -8,9 +8,9 @@ Tubeframe FE analyisis that doesn't suck. By "doesn't suck", what I mean is:
 
 # How's it Going?
 
-Well, I have loaded an IGES file, and I've meshed it, loaded it, and computed some results (are they right? idfk)
-![](08DEC2020_capture.png)
-It's really manual and sucks, though. So that's not good.
+Well, I have loaded an IGES file, automatically connected nodes (only node<->node), and generated members between all entity endpoints.
+![](09DEC2020_capture.png)
+Now I need to connect nodes to members, and create meshes for curved members.
 
 # Dependencies
 Python 3.7 with these packages:
